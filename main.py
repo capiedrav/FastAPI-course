@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Path
 
 app = FastAPI()
 
-# our data
+# our database
 students = {
     1: {
         "name": "John",
@@ -31,16 +31,24 @@ students = {
 def index():
     return {"message": "Hello World!!"}
 
-@app.get("/students")
-def get_students():
+@app.get("/students/")
+def get_students(name: str | None = None):
     """
-    Get all students.
+    Get all students or get a student by name by passing the name as a query parameter, 
+    i.e., /students/?name=student_name
     """
 
-    return students
+    if name: # name was passed as a query parameter
+        for student_id in students.keys():
+            if students[student_id]["name"] == name.capitalize(): # all names in the database are capitalized
+                return students[student_id]
+        
+        raise HTTPException(status_code=404, detail=f"Student with name {name} not found.")
+
+    return students # return all students
 
 @app.get("/students/{student_id}")
-def get_student(student_id: int = Path(description="Id of student", gt=0)):
+def get_student_by_id(student_id: int = Path(description="Id of student", gt=0)):
     """
     Get student by id.
     """
@@ -48,5 +56,4 @@ def get_student(student_id: int = Path(description="Id of student", gt=0)):
     try:
         return students[student_id]
     except KeyError:
-        raise HTTPException(status_code=404, detail=f"Student with id {student_id} not found")
-
+        raise HTTPException(status_code=404, detail=f"Student with id {student_id} not found.")
