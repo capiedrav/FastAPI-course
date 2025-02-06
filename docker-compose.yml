@@ -2,7 +2,11 @@ services:
   app:
     build: .
 
+    volumes:
+      - .:/fastAPI-course
+
     ports:
       - 8000:8000
-      
+
     container_name: fastAPI-ctnr
+    
