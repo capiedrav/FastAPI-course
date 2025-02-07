@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Path
 from pydantic import BaseModel
+from typing import Optional
 
 
 app = FastAPI()
@@ -10,9 +11,10 @@ class Student(BaseModel):
     Schema of Student model.
     """
 
-    name: str
-    age: int
-    class_: str
+    name: Optional[str] = None
+    age: Optional[int] = None
+    class_: Optional[str] = None
+
 
 # the database is a dictionary of Student objects
 students = {
@@ -53,7 +55,6 @@ def get_student_by_id(student_id: int = Path(description="Id of student", gt=0))
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Student with id {student_id} not found.")
 
-
 @app.post("/students/")
 def create_student(student_info: Student) -> Student:
     """
@@ -66,3 +67,23 @@ def create_student(student_info: Student) -> Student:
     students[student_id] = student_info # store student info in database
 
     return students[student_id]
+
+@app.put("/students/{student_id}")
+def update_student_info(student_id: int, student_info: Student) -> Student:
+    """
+    Update student info.
+    """
+
+    try:
+        student = students[student_id]
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Student with id {student_id} not found.")
+    else: # update student info
+        if student_info.name:
+            student.name = student_info.name
+        if student_info.age:
+            student.age = student_info.age
+        if student_info.class_:
+            student.class_ = student_info.class_
+
+        return student
