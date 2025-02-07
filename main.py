@@ -69,7 +69,7 @@ def create_student(student_info: Student) -> Student:
     return students[student_id]
 
 @app.put("/students/{student_id}")
-def update_student_info(student_id: int, student_info: Student) -> Student:
+def update_student_info(*, student_id: int = Path(description="Id of student", gt=0), student_info: Student) -> Student:
     """
     Update student info.
     """
@@ -87,3 +87,16 @@ def update_student_info(student_id: int, student_info: Student) -> Student:
             student.class_ = student_info.class_
 
         return student
+
+@app.delete("/students/{student_id}")
+def delete_student(student_id: int = Path(description="Id of student", gt=0)) -> dict[str, str]:
+    """
+    Delete student from database.
+    """
+
+    try:
+        del students[student_id]
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Student with id {student_id} not found.")
+    
+    return {"message": f"Student with id {student_id} successfully deleted"}
